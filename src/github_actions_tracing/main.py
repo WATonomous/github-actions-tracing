@@ -34,11 +34,15 @@ def run_graphql_query(query, token):
 
 
 @app.command()
-def get_data(url, token):
+def get_data(github_url, github_token=None):
+    """
+    Retrieve data from a GitHub Actions workflow run URL.
+    """
+
     # Extract owner, repo, run_id, and optional attempt number from the URL
     match = re.match(
         r"https://github\.com/(?P<owner>[^/]+)/(?P<repo>[^/]+)/actions/runs/(?P<run_id>\d+)(?:/attempts/(?P<attempt>\d+))?",
-        url,
+        github_url,
     )
     if not match:
         raise ValueError("Invalid GitHub Actions URL format")
@@ -48,7 +52,10 @@ def get_data(url, token):
     run_id = match.group("run_id")
     attempt = match.group("attempt")
 
-    headers = {"Authorization": f"token {token}"}
+    headers = {}
+
+    if github_token:
+        headers["Authorization"] = f"Bearer {github_token}"
 
     # Retrieve workflow run details
     run_url = f"https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}"
@@ -91,9 +98,14 @@ TRUSTED_PACKET_SEQUENCE_ID = 42
 
 
 @app.command()
-def create_trace_file(data=None, data_json=None):
+def create_trace_file(
+    data=None,
+    data_json=None,
+    output_file="github_actions.perfetto-trace",
+    output_debug_json=None,
+):
     """
-    This function creates a Perfetto trace file from the given data.
+    Create a Perfetto trace file from the given data.
 
     References:
     - https://perfetto.dev/docs/reference/synthetic-track-event
@@ -229,26 +241,40 @@ def create_trace_file(data=None, data_json=None):
             perfetto_trace_pb2.TrackEvent.Type.TYPE_SLICE_END
         )
 
+    # Write the trace to a JSON file for debugging
+    if output_debug_json:
+        with open(output_debug_json, "w") as f:
+            f.write(trace_to_json(trace))
+
+        print(f"Trace Debug JSON written to {output_debug_json}")
+
     # Write the trace to a binary file
-    with open("trace_output_perfetto.pftrace", "wb") as f:
+    with open(output_file, "wb") as f:
         f.write(trace.SerializeToString())
 
-    # Write the trace to a JSON file for debugging
-    with open("trace_output_perfetto.json", "w") as f:
-        f.write(trace_to_json(trace))
-
     print(
-        "Trace file created successfully as 'trace_output_perfetto.pftrace and trace_output_perfetto.json'"
+        f"Trace file written to {output_file}. You can view it using the Perfetto UI (https://ui.perfetto.dev/)."
     )
 
 
 @app.command()
-def generate_trace(github_url, github_token):
+def generate_trace(
+    github_url,
+    github_token=None,
+    output_file="github_actions.perfetto-trace",
+    output_debug_json=None,
+):
+    """
+    Generate a Perfetto trace file from a GitHub Actions workflow run URL.
+    """
+
     try:
         print(f"Fething data from {github_url}")
         data = get_data(github_url, github_token)
         print("Creating trace file")
-        create_trace_file(data)
+        create_trace_file(
+            data=data, output_file=output_file, output_debug_json=output_debug_json
+        )
     except requests.exceptions.RequestException as e:
         print(f"Network error: {e}")
         raise
@@ -258,6 +284,7 @@ def generate_trace(github_url, github_token):
     except Exception as e:
         print(f"Unexpected error: {e}")
         raise
+
 
 if __name__ == "__main__":
     app()
