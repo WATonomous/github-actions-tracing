@@ -12,6 +12,9 @@ license = {text = "BSD-2-Clause"}
 
 dynamic = ["version"]
 
+[project.scripts]
+gatrace = "github_actions_tracing.main:app"
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
