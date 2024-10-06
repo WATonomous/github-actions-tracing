@@ -5,12 +5,23 @@ import json
 import argparse
 import time
 from urllib.parse import urlparse
+from requests.structures import CaseInsensitiveDict
+
+
+def run_graphql_query(query, token):
+    url = "https://api.github.com/graphql"
+    headers = CaseInsensitiveDict()
+    headers["Authorization"] = f"Bearer {token}"
+    headers["Content-Type"] = "application/json"
+    response = requests.post(url, headers=headers, json={"query": query})
+    response.raise_for_status()
+    return response.json()
 
 
 def retrieve_run_data(url, token):
-    # Extract owner, repo, run ID, and attempt from the URL
+    # Extract owner, repo, and run ID from the URL
     match = re.match(
-        r"https://github\.com/(?P<owner>[^/]+)/(?P<repo>[^/]+)/actions/runs/(?P<run_id>\d+)/attempts/(?P<attempt>\d+)",
+        r"https://github\.com/(?P<owner>[^/]+)/(?P<repo>[^/]+)/actions/runs/(?P<run_id>\d+)",
         url,
     )
     if not match:
@@ -19,7 +30,6 @@ def retrieve_run_data(url, token):
     owner = match.group("owner")
     repo = match.group("repo")
     run_id = match.group("run_id")
-    attempt = match.group("attempt")
 
     headers = {"Authorization": f"token {token}"}
 
@@ -28,14 +38,60 @@ def retrieve_run_data(url, token):
     run_response = requests.get(run_url, headers=headers)
     run_response.raise_for_status()
     run_data = run_response.json()
-    run_data["attempt"] = attempt  # Add attempt information to run_data
 
+    # Retrieve node ID for GraphQL query
+    node_id = run_data.get("node_id")
+    if not node_id:
+        raise ValueError("Failed to retrieve node ID for the workflow run.")
+
+    # GraphQL query to get additional details using the node ID
+    query = f"""
+    {{
+        node(id: "{node_id}") {{
+            ... on WorkflowRun {{
+                runNumber
+                createdAt
+                event
+                checkSuite {{
+                    conclusion
+                    createdAt
+                    checkRuns(first: 100) {{
+                        totalCount
+                        nodes {{
+                            id
+                            startedAt
+                            completedAt
+                            name
+                            conclusion
+                            steps(first: 100) {{
+                                totalCount
+                                nodes {{
+                                    name
+                                    startedAt
+                                    completedAt
+                                    status
+                                    secondsToCompletion
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        }}
+    }}
+    """
+    graphql_response = run_graphql_query(query, token)
+    workflow_run_data = graphql_response.get("data", {}).get("node", {})
+    if not workflow_run_data:
+        raise ValueError("Failed to retrieve workflow run data using GraphQL.")
+
+    run_data.update(workflow_run_data)
     return owner, repo, run_data
 
 
-def retrieve_jobs(owner, repo, run_id, attempt, token):
+def retrieve_jobs(owner, repo, run_id, token):
     headers = {"Authorization": f"token {token}"}
-    jobs_url = f"https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt}/jobs"
+    jobs_url = f"https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}/jobs"
     jobs_data = []
     page = 1
     per_page = 100  # Maximize page size to reduce the number of requests
@@ -58,7 +114,7 @@ def create_trace_file(owner, repo, run_data, jobs_data):
 
     # Create trace event for workflow run
     start_time = int(
-        time.mktime(time.strptime(run_data["created_at"], "%Y-%m-%dT%H:%M:%SZ")) * 1e6
+        time.mktime(time.strptime(run_data["createdAt"], "%Y-%m-%dT%H:%M:%SZ")) * 1e6
     )
     if jobs_data:
         end_time = max(
@@ -130,11 +186,15 @@ def main():
     github_url = args.url.strip()
     github_token = args.token.strip()
 
+    # Check if the URL contains an attempt number and raise an error if it does
+    if re.search(r"/attempts/\d+", github_url):
+        raise ValueError(
+            "Only the latest attempt is supported. Please provide a URL without an attempt number."
+        )
+
     try:
         owner, repo, run_data = retrieve_run_data(github_url, github_token)
-        jobs_data = retrieve_jobs(
-            owner, repo, run_data["id"], run_data["attempt"], github_token
-        )
+        jobs_data = retrieve_jobs(owner, repo, run_data["id"], github_token)
         create_trace_file(owner, repo, run_data, jobs_data)
         print("Trace file created successfully as 'trace_output_perfetto.json'.")
     except requests.exceptions.RequestException as e:
