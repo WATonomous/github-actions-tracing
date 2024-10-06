@@ -6,7 +6,7 @@ A tool for generating traces from GitHub Actions. The generated traces are compa
 
 ```bash
 # Install dependencies
-pdm install
+pdm sync --dev
 
 # Run tests
 pdm run --verbose pytest tests
