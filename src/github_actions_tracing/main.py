@@ -8,7 +8,7 @@ from google.protobuf.json_format import MessageToDict
 from requests.structures import CaseInsensitiveDict
 from watcloud_utils.typer import app
 
-from vendor import perfetto_trace_pb2
+from vendor.generated import perfetto_trace_pb2
 
 
 def generate_uuid(workflow_run_id, attempt_number=-1, job_id=-1, step_id=-1):
@@ -258,7 +258,6 @@ def generate_trace(github_url, github_token):
     except Exception as e:
         print(f"Unexpected error: {e}")
         raise
-
 
 if __name__ == "__main__":
     app()

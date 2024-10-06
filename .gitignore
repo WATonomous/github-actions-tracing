@@ -176,4 +176,13 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python
 
 
-/templates
+# pdm
+# https://pdm-project.org/en/latest/usage/project/#working-with-version-control
+/.pdm-python
+# https://github.com/pdm-project/pdm/blob/8ad143c11509ae1a1e0cf8b4e58f2bb9e6bdc30a/.gitignore#L140-L141
+/.pdm-build/
+/src/github_actions_tracing/_version.py
+
+/tmp
+/vendor/generated/*
+!/vendor/generated/.gitkeep
