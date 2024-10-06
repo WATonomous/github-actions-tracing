@@ -34,3 +34,8 @@ test = [
 gatrace = { call = "github_actions_tracing.main:app" }
 pre_run = "./scripts/generate-perfetto-trace-proto.sh"
 pre_build = "./scripts/generate-perfetto-trace-proto.sh"
+
+[tool.pdm.build]
+# Docs: https://backend.pdm-project.org/build_config/#include-or-exclude-files
+includes = ["src", "vendor"]
+excludes = ["**/.gitkeep"]
