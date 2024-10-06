@@ -13,7 +13,7 @@ from vendor.generated import perfetto_trace_pb2
 
 def generate_uuid(workflow_run_id, attempt_number=-1, job_id=-1, step_id=-1):
     """
-    Generate a unique 64-bit identifier for a given job or step.
+    Generate a unique 64-bit identifier for a given workflow, attempt, job or step.
     """
     return hash(f"{workflow_run_id}_{attempt_number}_{job_id}_{step_id}") % (2**64)
 
