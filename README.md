@@ -6,7 +6,25 @@ A tool for generating traces from GitHub Actions. The generated traces are compa
 
 1. Download the `.whl` file from the [latest release](https://github.com/WATonomous/github-actions-tracing/releases/latest).
 2. Install the wheel: `pip install <path_to_file.whl>`
-3. Run the CLI: `gatrace`
+3. Run the CLI: `gatrace --help`
+
+Example usage:
+
+```bash
+gatrace generate-trace https://github.com/WATonomous/github-actions-tracing/actions/runs/11205960644
+```
+
+This will generate a trace file in the current directory.
+
+To view the trace, you can use [Perfetto UI](https://ui.perfetto.dev/).
+
+To generate traces for private repositories, you will need to provide a GitHub token. You can do this by passing the `--github-token` argument to the CLI.
+
+```bash
+gatrace generate-trace <run_url> --github-token <token>
+```
+
+Note that to view organization private repositories, the token must have the [`read:org` scope](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#types-of-personal-access-tokens).
 
 ## Development
 
