@@ -60,6 +60,7 @@ jobs:
       - name: Run sanity check
         run: |
           gatrace --help
+          gatrace version
 
   publish:
     runs-on: ubuntu-latest
