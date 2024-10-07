@@ -10,6 +10,15 @@ from watcloud_utils.typer import app
 
 from vendor.generated import perfetto_trace_pb2
 
+from ._version import __version__
+
+@app.command()
+def version():
+    """
+    Print the version of the tool.
+    """
+    return f"GitHub Actions Tracing version {__version__}"
+
 
 def generate_uuid(workflow_run_id, attempt_number=-1, job_id=-1, step_id=-1):
     """
