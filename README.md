@@ -1,6 +1,8 @@
 # github-actions-tracing
 
-A tool for generating traces from GitHub Actions. The generated traces are compatible with [Perfetto](https://ui.perfetto.dev/).
+A tool for generating traces from GitHub Actions.
+The generated traces are compatible with [Perfetto](https://ui.perfetto.dev/).
+Example traces can be found in this [discussion post](https://github.com/WATonomous/github-actions-tracing/discussions/13).
 
 ## Getting started
 
