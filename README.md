@@ -39,3 +39,10 @@ pdm run --verbose pytest tests
 pdm run gatrace
 ```
 
+## Releasing
+
+Releases are manually created from the [Releases page](https://github.com/WATonomous/github-actions-tracing/releases).
+The release workflow will automatically build the project and upload the wheel to the release.
+Release notes can be auto-generated via the web interface.
+
+Follow [semantic versioning](https://semver.org/) when creating tags for releases.
