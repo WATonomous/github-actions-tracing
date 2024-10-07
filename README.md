@@ -28,6 +28,8 @@ Note that to view organization private repositories, the token must have the [`r
 
 ## Development
 
+This project uses [PDM](https://pdm-project.org/) for dependency management.
+
 ```bash
 # Install dependencies
 pdm sync --dev
@@ -42,7 +44,9 @@ pdm run gatrace
 ## Releasing
 
 Releases are manually created from the [Releases page](https://github.com/WATonomous/github-actions-tracing/releases).
-The release workflow will automatically build the project and upload the wheel to the release.
+CI will automatically build the wheel and publish it to the release page.
 Release notes can be auto-generated via the web interface.
 
-Follow [semantic versioning](https://semver.org/) when creating tags for releases.
+Please follow [semantic versioning](https://semver.org/) when creating tags for releases.
+Tags should be prefixed with `v` (e.g. `v1.0.0`).
+Version numbers less than `1.0.0` should be considered unstable and may have breaking changes in minor versions.
