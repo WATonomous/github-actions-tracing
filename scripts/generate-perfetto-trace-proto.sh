@@ -3,6 +3,7 @@
 set -o errexit -o nounset -o pipefail
 
 mkdir -p tmp
+mkdir -p vendor/generated
 
 check_proto() {
     echo "cf1ec0ad32d6772a2bf852e17195e1616062c2afa2320a2eb3f8af7f7956d7e3 tmp/perfetto_trace.proto" | sha256sum --check $@

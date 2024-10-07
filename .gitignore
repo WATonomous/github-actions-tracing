@@ -185,4 +185,3 @@ pyrightconfig.json
 
 /tmp
 /vendor/generated/*
-!/vendor/generated/.gitkeep
