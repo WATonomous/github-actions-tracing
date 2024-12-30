@@ -21,7 +21,7 @@ jobs:
       - name: Set up Docker (macOS)
         if: ${{ startsWith(matrix.os, 'macos') }}
         run: |
-          brew install colima
+          brew install colima docker
           brew services start colima
 
       - name: Set up PDM
