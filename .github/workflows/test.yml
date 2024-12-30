@@ -18,13 +18,19 @@ jobs:
       fail-fast: false # Continue running jobs even if one fails
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.17
+      - name: Set up Docker (macOS)
+        if: ${{ startsWith(matrix.os, 'macos') }}
+        run: |
+          brew install colima
+          colima start
 
       - name: Set up PDM
         uses: pdm-project/setup-pdm@568ddd69406b30de1774ec0044b73ae06e716aa4 # v4.1
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 #v4.1.17
 
       - name: Install dependencies
         run: |
