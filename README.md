@@ -21,6 +21,7 @@ This will generate a trace file in the current directory.
 To view the trace, you can use [Perfetto UI](https://ui.perfetto.dev/).
 
 To generate traces for private repositories, you will need to provide a GitHub token. You can do this by passing the `--github-token` argument to the CLI.
+This token must have the `workflow` scope.
 
 ```bash
 gatrace generate-trace <run_url> --github-token <token>
