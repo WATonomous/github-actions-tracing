@@ -22,7 +22,7 @@ jobs:
         if: ${{ startsWith(matrix.os, 'macos') }}
         run: |
           brew install colima
-          colima start
+          brew services start colima
 
       - name: Set up PDM
         uses: pdm-project/setup-pdm@568ddd69406b30de1774ec0044b73ae06e716aa4 # v4.1
