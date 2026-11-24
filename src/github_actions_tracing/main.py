@@ -103,12 +103,16 @@ def get_data(github_url, github_token=None):
     if not run_data:
         raise ValueError("Failed to retrieve workflow run data.")
 
-    # Retrieve jobs data
-    jobs_url = f"{run_url}/jobs"
-    jobs_response = requests.get(jobs_url + "?per_page=100", headers=headers)
-    jobs_response.raise_for_status()
+    # Retrieve jobs data, following every page from GitHub
+    jobs_url = f"{run_url}/jobs?per_page=100"
+    jobs_data = []
 
-    jobs_data = jobs_response.json().get("jobs", [])
+    while jobs_url:
+        jobs_response = requests.get(jobs_url, headers=headers)
+        jobs_response.raise_for_status()
+        jobs_data.extend(jobs_response.json().get("jobs", []))
+        jobs_url = jobs_response.links.get("next", {}).get("url")
+
     if not jobs_data:
         raise ValueError("Failed to retrieve jobs data.")
     
